@@ -98,7 +98,7 @@ class ListaAdyacenciaGrafo<T> : Grafo<T> {
         }
 
     fun subgrafo(subVertices: Collection<Int>): Grafo<T>{
-        val sub = Grafo<T>()
+        val sub = ListaAdyacenciaGrafo<T>()
 
     val setSub = subVertices.toSet()
     var value: T?
