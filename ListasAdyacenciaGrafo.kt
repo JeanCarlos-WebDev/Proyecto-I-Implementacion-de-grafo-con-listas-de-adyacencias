@@ -66,15 +66,34 @@ class ListasAdyacenciaGrafo<T> : Grafo<T>{
         Retorna true si la eliminación fue exitosa.*/
     override fun eliminarVertice(v: T): Boolean{
         val id = vertexMap[v] ?: return false
-        adj[id].clear()
-        for (i in adj.indices){ 
-            if (id in adj[i]){
-                adj[i].remove(id)
+            val lastIndex = size - 1
+            val lastVertex = indexToVertex[lastIndex]
+
+            for (set in adj) {
+                set.remove(id)
             }
+
+            if (id != lastIndex) {
+                indexToVertex[id] = lastVertex
+                adj[id] = adj[lastIndex]
+
+                vertexMap[lastVertex] = id
+
+                for (set in adj) {
+                    if (lastIndex in set) {
+                        set.remove(lastIndex)
+                        set.add(id)
+                    }
+                }
+            }
+
+            vertexMap.remove(v)
+            indexToVertex.removeAt(lastIndex)
+            adj.removeAt(lastIndex)
+            size--
+
+            return true
         }
-        vertexMap.remove(v)
-        return true
-    }
 
     /* tamano;
         Retorna la cantidad de vértices en el grafo (∣V∣). 
