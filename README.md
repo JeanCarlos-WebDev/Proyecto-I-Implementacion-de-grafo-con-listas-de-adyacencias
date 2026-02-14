@@ -1,13 +1,15 @@
 ## Proyecto-I-Grafo-Implementacion-con-listas-de-adyacencias
 
-##Integrantes:
+## Integrantes:
 
 - Jean Sifontes carnet: 22-10387
 - Cristina Puyosa carnet: 23-10395
-
+----------------------------------------------------
 ## Descripción
 
 Se implementó un grafo dirigido genérico en Kotlin utilizando listas de adyacencia, estructura que almacena para cada vértice el conjunto de sus vecinos.
+
+---------------------------------------------------
 
 ## Estructuras usadas
 
@@ -27,6 +29,8 @@ Representa la lista de adyacencia.
 - No se permiten vértices ni arcos duplicados.
 - Al eliminar un vértice se reconstruyen los índices para mantener la estructura compacta.
 
+-------------------------------------------------------------
+
 ## Complejidad de los Métodos
 
 Sea:
@@ -45,4 +49,5 @@ Sea:
 | **eliminarVertice** | O(V + E) | Se eliminan los arcos de salida en tiempo proporcional a su grado y luego se revisan todas las listas para borrar arcos de entrada. |
 | **tamano** | O(1) | Retorna el tamaño almacenado en la estructura sin realizar recorridos. |
 | **subgrafo** | O(V + E) | Primero se filtran los vértices solicitados y luego se recorren únicamente sus listas de adyacencia para copiar los arcos existentes dentro del subconjunto. |
+
 
