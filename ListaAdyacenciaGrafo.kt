@@ -1,121 +1,108 @@
 package proyecto1
 
-import java.util.HashMap
 
-class ListaAdyacenciaGrafo<T> : Grafo<T> {
-    val vertices: MutableMap<Int, NodoVer<T>> = mutableMapOf()
+class ListasAdyacenciaGrafo<T> : Grafo<T>{ 
+    private val vertexMap = mutableMapOf< T, Int >()
+    private val indexToVertex = mutableListOf< T >()
+    private val adj = mutableListOf<MutableSet<Int>>() 
+    
 
-    private val head: NodoVer<T> = NodoVer(Vertice(Int.MIN_VALUE)) // centinela head
-    private val tail: NodoVer<T> = NodoVer(Vertice(Int.MAX_VALUE)) // centinela tail
-    var tamanio: Int = 0
-        private set
+    var size: Int = 0
+    private set
 
-        init{
-            head.next = tail
-            tail.prev = head
+
+    /* agregarVertice: 
+        Recibe un objeto de tipo T y lo agrega al conjunto de vértices del grafo. 
+        Retorna true si el vértice fue agregado con éxito y false si el vértice ya existía. */
+    override fun agregarVertice(v: T): Boolean{
+        if (v in vertexMap) return false
+        vertexMap[v] = size
+        indexToVertex.add(v)
+        adj.add(mutableSetOf())
+        size++
+        return true    
+    }
+
+    /* conectar
+        Crea un arco dirigido desde el vértice desde hacia el vértice hasta. 
+        Retorna true si la conexión se realizó con  ́exito. 
+        Si alguno de los vértices no existe, retorna false.*/
+    override fun conectar(desde: T, hasta: T): Boolean{
+        val desdeId = vertexMap[desde]?: return false
+        val hastaId = vertexMap[hasta]?: return false
+        return adj[desdeId].add(hastaId)
+    }
+
+    /* Contiene
+        Retorna true si el vértice v pertenece al conjunto de vértices del grafo. */
+    override fun contiene(v: T): Boolean{
+        if(v in vertexMap) return true
+        return false
+    }
+
+    /* obtenerArcosSalida
+        Retorna una lista con todos los vértices u tales que existe un arco (v, u). 
+        Si el vértice no existe, retorna una lista vacía.*/
+    override fun obtenerArcosSalida(v: T): List<T> {
+        val i = vertexMap[v]?: return emptyList()
+        return adj[i].map{indexToVertex[it]} 
+    }
+
+    /* obtenerArcosEntrada
+        Retorna una lista con todos los vértices u tales que existe un arco (u, v).*/
+    override fun obtenerArcosEntrada(v: T): List<T>{
+        val list: MutableList<T> = mutableListOf()
+        val id = vertexMap[v] ?: return emptyList()
+        for (i in 0 until size){ 
+            if (id in adj[i]){
+                list.add(indexToVertex[i])
+            }
         }
+        return list
+    }
 
+    /* eliminarVertice:
+        Elimina el vértice v y todos los arcos asociados (tanto de entrada como de salida). 
+        Retorna true si la eliminación fue exitosa.*/
+    override fun eliminarVertice(v: T): Boolean{
+        val id = vertexMap[v] ?: return false
+        adj[id].clear()
+        for (i in adj.indices){ 
+            if (id in adj[i]){
+                adj[i].remove(id)
+            }
+        }
+        vertexMap.remove(v)
+        return true
+    }
 
+    /* tamano;
+        Retorna la cantidad de vértices en el grafo (∣V∣). 
+    */
+    override fun tamano(): Int{
+        return vertexMap.size
+    }
 
-        fun agregarVertice(key: Int, valor: T): Boolean{
-            for (vertice in vertices) {
-                if (vertice.key == key || vertice.value == valor){
-                    return false
+    //subgrafo
+    override fun subgrafo(vertices: Collection<T>): Grafo<T>{
+        val subGr = ListasAdyacenciaGrafo<T>()
+        val setVer = mutableSetOf<Int>()
+        for (v in vertices){
+            if (v in vertexMap){
+                val id = vertexMap[v]?: continue
+                subGr.agregarVertice(v)
+                setVer.add(id)
+            }
+        }
+        for (i in setVer){
+            for (j in adj[i]){
+                if (j in setVer){
+                    val desde = indexToVertex[i]
+                    val hasta = indexToVertex[j]
+                    subGr.conectar(desde, hasta)
                 }
             }
-            vertices[key] = NodoVer(Vertice(key, valor))
-            vertices[key]?.next = tail
-            vertices[key]?.prev = tail.prev
-            tail.prev = vertices[key]
-            tamanio++
-            return true
         }
-        //mío
-
-
-        fun contiene(idVer: Int): Boolean{
-            if (vertices.containsKey(idVer) == false){
-                return false
-            }
-            return true
-        }
-
-        fun conectar(idVer1: Int, idVer2: Int): Boolean{
-            // Como el grafo es no dirigido tenemos que añadir información redundante
-            val listaLad1 = vertices[idVer1] 
-            val listaLad2 = vertices[idVer2]
-            if (listaLad1 == null || listaLad2 == null){
-                return false
-            }
-
-            listaLad1.ady[idVer2] = listaLad2
-            listaLad2.ady[idVer1] = listaLad1
-
-            return true
-            
-
-        }
-
-        fun obtenerArcosSalida(idVer: Int): List<T>{
-            val list: MutableList<T> = mutableListOf()
-            if(vertices.containsKey(idVer)){
-                vertices[idVer]!!.ady.values.forEach {it -> if(it.ver.value != null ) list.add(it.ver.value)}
-            }
-            
-            return list
-
-        }
-
-
-        fun obtenerArcosEntrada(keyVer: Int): List<T>{
-            val list: MutableList<T> = mutableListOf()
-            for (i in vertices.keys){
-                val nodo = vertices[i]
-                if (nodo?.ady?.containsKey(keyVer) == true){
-                    nodo.ver.value?.let { list.add(it) } 
-                }
-            }
-            return list
-
-        }
-
-        fun eliminarVertice(keyVer: Int): Boolean{
-            val nodo = vertices[keyVer] ?: return false
-            
-            for (i in nodo.ady.keys){
-                vertices[i]?.ady?.remove(keyVer)
-            }
-            nodo.prev?.next = nodo.next
-            nodo.next?.prev = nodo.prev
-            vertices.remove(keyVer)
-            tamanio--
-            return true 
-        }
-
-
-        fun tamano(): Int {
-            return this.tamanio
-        }
-
-    fun subgrafo(subVertices: Collection<Int>): Grafo<T>{
-        val sub = ListaAdyacenciaGrafo<T>()
-
-    val setSub = subVertices.toSet()
-    var value: T?
-    for (i in subVertices){
-        value = vertices[i]?.ver?.value
-        if (vertices.containsKey(i) && value != null){
-            sub.agregarVertice(i, value)
-        }
-    } 
-    for (i in subVertices){
-        val nodo = vertices[i] ?: continue
-        for (j in nodo.ady.keys){
-            if (setSub.contains(j)){
-                sub.conectar(i,j)
-            }
+        return subGr
         }
     }
-    return sub
-    }
-}
